@@ -24,6 +24,16 @@ class ExtractData:
             charges.append(float(data[2]))
         return symbols, charges
 
+    def get_engine(self):
+        '''
+        check whether engine is DFTB
+        '''
+        engine = "Band"
+        for line in self.contents:
+            if "Engine" in line:
+                engine = line.split()[0]
+        return engine
+
     def get_energy(self):
         """
         Function to extract energy from GFN-XTB ams

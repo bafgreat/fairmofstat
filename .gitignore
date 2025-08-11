@@ -1,0 +1,6 @@
+.history
+.pyenv
+poetry.lock
+*/__pycache__
+*._*
+example

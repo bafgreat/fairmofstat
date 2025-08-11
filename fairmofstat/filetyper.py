@@ -9,38 +9,10 @@ import json
 import codecs
 from zipfile import ZipFile
 import numpy as np
-from ase import Atoms
-import ase
+
 import pandas as pd
 import msgpack
 from importlib.resources import files
-
-
-class AtomsEncoder(json.JSONEncoder):
-    '''
-    ASE atom type encorder for json to enable serialising
-    ase atom object.
-    '''
-
-    def default(self, encorder_obj):
-        '''
-        define different encoder to serialise ase atom objects
-        '''
-        if isinstance(encorder_obj, Atoms):
-            coded = dict(positions=[list(pos) for pos in encorder_obj.get_positions()], lattice_vectors=[
-                         list(c) for c in encorder_obj.get_cell()], labels=list(encorder_obj.get_chemical_symbols()))
-            if len(encorder_obj.get_cell()) == 3:
-                coded['periodic'] = ['True', 'True', 'True']
-            coded['n_atoms'] = len(list(encorder_obj.get_chemical_symbols()))
-            coded['atomic_numbers'] = encorder_obj.get_atomic_numbers().tolist()
-            keys = list(encorder_obj.info.keys())
-            if 'atom_indices_mapping' in keys:
-                info = encorder_obj.info
-                coded.update(info)
-            return coded
-        if isinstance(encorder_obj, ase.spacegroup.Spacegroup):
-            return encorder_obj.todict()
-        return json.JSONEncoder.default(self, encorder_obj)
 
 
 def numpy_to_json(ndarray, file_name):
@@ -69,37 +41,6 @@ def json_to_numpy(json_file):
     json_reader = codecs.open(json_file, 'r', encoding='utf-8').read()
     json_reader = np.array(json.loads(json_reader))
     return read_json
-
-
-def json_to_ase_atom(data,  encoder, filename):
-    '''
-    serialise an ase atom type and write as json
-    '''
-    with open(filename, 'w', encoding='utf-8') as f_obj:
-        json.dump(data, f_obj, indent=4, sort_keys=False, cls=encoder)
-    return
-
-
-def append_json_atom(data,  encoder, filename):
-    '''
-    append a data containing an ase atom object
-    '''
-    if not os.path.exists(filename):
-        with open(filename, 'w', encoding='utf-8') as f_obj:
-            f_obj.write('{}')
-    elif os.path.getsize(filename) == 0:
-        with open(filename, 'w', encoding='utf-8') as f_obj:
-            f_obj.write('{}')
-    with open(filename, 'r+', encoding='utf-8') as f_obj:
-        # First we load existing data into a dict.
-        file_data = json.load(f_obj)
-        # Join new_data with file_data inside emp_details
-        file_data.update(data)
-        # Sets file's current position at offset.
-        f_obj.seek(0)
-        # convert back to json.
-
-        json.dump(data, f_obj, indent=4, sort_keys=False, cls=encoder)
 
 
 def append_json(new_data, filename):
